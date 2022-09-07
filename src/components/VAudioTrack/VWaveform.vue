@@ -137,6 +137,7 @@
     <!-- Message overlay -->
     <div
       v-else
+      data-testid="audio-message"
       class="loading absolute inset-0 flex items-center justify-center text-xs font-bold"
     >
       {{ message }}
