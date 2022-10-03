@@ -12,7 +12,7 @@
       sizeClasses,
       route === 'home'
         ? 'border-b border-tx border-b-pink bg-pink text-white'
-        : 'border-dark-charcoal-20',
+        : 'border-tx bg-dark-charcoal-10',
     ]"
     v-on="$listeners"
   >

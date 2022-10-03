@@ -8,7 +8,11 @@
       :placeholder="placeholder || $t('hero.search.placeholder')"
       v-bind="$attrs"
       class="search-field flex-grow focus:border-pink"
-      :class="[route === 'home' ? 'border-tx' : 'border-dark-charcoal-20']"
+      :class="[
+        route === 'home'
+          ? 'border-tx'
+          : 'border-tx bg-dark-charcoal-10 focus-within:border-dark-charcoal-20 focus-within:bg-white group-hover:border-dark-charcoal-20 group-hover:bg-white',
+      ]"
       :label-text="
         $t('search.search-bar-label', { openverse: 'Openverse' }).toString()
       "

@@ -14,18 +14,15 @@ test.describe.configure({ mode: 'parallel' })
 
 const headerSelector = '.main-header'
 
-test.describe('header snapshots', () => {
+test.describe('header-old snapshots', () => {
   for (const dir of languageDirections) {
     test.describe(dir, () => {
       test.beforeEach(async ({ page }) => {
-        await goToSearchTerm(page, 'birds', {
-          dir: dir,
-          query: 'ff_new_header=on',
-        })
+        await goToSearchTerm(page, 'birds', { dir: dir })
       })
 
-      test.describe('header', () => {
-        breakpoints.describeEachDesktopExceptMd(({ expectSnapshot }) => {
+      test.describe('header-old', () => {
+        breakpoints.describeEachDesktop(({ expectSnapshot }) => {
           test('filters open', async ({ page }) => {
             await page.mouse.move(0, 150)
             await expectSnapshot(
@@ -33,7 +30,9 @@ test.describe('header snapshots', () => {
               page.locator(headerSelector)
             )
           })
+        })
 
+        breakpoints.describeEvery(({ expectSnapshot }) => {
           test('resting', async ({ page }) => {
             // By default, filters are open. We need to close them.
             await closeFilters(page)
@@ -63,7 +62,6 @@ test.describe('header snapshots', () => {
             )
           })
         })
-        // TODO: add mobile tests
       })
     })
   }
