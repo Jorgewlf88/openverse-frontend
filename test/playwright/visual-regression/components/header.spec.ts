@@ -62,6 +62,16 @@ test.describe('header snapshots', () => {
               page.locator(headerSelector)
             )
           })
+
+          test('searchbar active', async ({ page }) => {
+            await closeFilters(page)
+            await page.click('input')
+            await hideInputCursors(page)
+            await expectSnapshot(
+              `searchbar-active-${dir}`,
+              page.locator(headerSelector)
+            )
+          })
         })
         // TODO: add mobile tests
       })
