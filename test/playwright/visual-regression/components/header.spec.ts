@@ -65,8 +65,8 @@ test.describe('header snapshots', () => {
 
           test('searchbar active', async ({ page }) => {
             await closeFilters(page)
-            await page.click('input')
             await hideInputCursors(page)
+            await page.click('input')
             await expectSnapshot(
               `searchbar-active-${dir}`,
               page.locator(headerSelector)

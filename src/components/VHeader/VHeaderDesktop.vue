@@ -10,14 +10,19 @@
     <VLogoButton :is-fetching="isFetching" :is-search-route="true" />
 
     <VSearchBar
+      ref="searchBarRef"
       v-model.trim="searchTerm"
       class="flex-grow me-4"
       size="medium"
       @submit="handleSearch"
     >
+      <VClearButton
+        class="hidden me-2 group-focus-within:flex"
+        @click="clearSearchTerm"
+      />
       <span
         v-show="searchStatus"
-        class="info mx-4 hidden whitespace-nowrap text-xs font-semibold text-dark-charcoal-70 group-hover:text-dark-charcoal group-focus:text-dark-charcoal lg:block"
+        class="info mx-4 hidden whitespace-nowrap text-xs font-semibold text-dark-charcoal-70 group-focus-within:hidden group-hover:text-dark-charcoal group-focus:text-dark-charcoal lg:block"
       >
         {{ searchStatus }}
       </span>
@@ -71,13 +76,13 @@ import local from '~/utils/local'
 import { env } from '~/utils/env'
 import { Focus } from '~/utils/focus-management'
 
+import { ensureFocus } from '~/utils/reakit-utils/focus'
+
 import VLogoButton from '~/components/VHeader/VLogoButton.vue'
 import VSearchGridFilter from '~/components/VFilters/VSearchGridFilter.vue'
 import VFilterButton from '~/components/VHeader/VFilterButton.vue'
 import VSearchBar from '~/components/VHeader/VSearchBar/VSearchBar.vue'
 import VSearchTypePopover from '~/components/VContentSwitcher/VSearchTypePopover.vue'
-
-import closeIcon from '~/assets/icons/close.svg'
 
 /**
  * The desktop search header.
@@ -94,6 +99,8 @@ export default defineComponent({
   },
   setup(_, { emit }) {
     const filterButtonRef = ref<InstanceType<typeof VFilterButton> | null>(null)
+    const searchBarRef = ref<InstanceType<typeof VSearchBar> | null>(null)
+
     const sidebarVisibleRef = ref(false)
 
     const { app } = useContext()
@@ -138,6 +145,12 @@ export default defineComponent({
         localSearchTerm.value = value
       },
     })
+
+    const clearSearchTerm = () => {
+      searchTerm.value = ''
+      ensureFocus(searchBarRef.value?.$el.querySelector('input') as HTMLElement)
+      console.log('clearSearchTerm', window.document.activeElement)
+    }
 
     const selectSearchType = async (type) => {
       content.setActiveType(type)
@@ -238,7 +251,7 @@ export default defineComponent({
 
     return {
       filterButtonRef,
-      closeIcon,
+      searchBarRef,
       isFetching,
 
       isHeaderScrolled,
@@ -247,6 +260,7 @@ export default defineComponent({
       close,
 
       handleSearch,
+      clearSearchTerm,
       selectSearchType,
       searchStatus,
       searchTerm,
