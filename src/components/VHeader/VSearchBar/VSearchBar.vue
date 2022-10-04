@@ -7,11 +7,11 @@
     <VInputField
       :placeholder="placeholder || $t('hero.search.placeholder')"
       v-bind="$attrs"
-      class="search-field flex-grow focus:border-pink"
+      class="search-field flex-grow"
       :class="[
         route === 'home'
           ? 'border-tx'
-          : 'border-tx bg-dark-charcoal-10 focus-within:border-dark-charcoal-20 focus-within:bg-white group-hover:border-dark-charcoal-20 group-hover:bg-white',
+          : 'border-tx bg-dark-charcoal-10 text-dark-charcoal-70 focus-within:bg-white group-hover:bg-dark-charcoal-10 group-hover:text-dark-charcoal group-hover:focus-within:bg-white',
       ]"
       :label-text="
         $t('search.search-bar-label', { openverse: 'Openverse' }).toString()
