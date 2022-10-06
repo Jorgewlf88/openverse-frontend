@@ -17,12 +17,13 @@
       @submit="handleSearch"
     >
       <VClearButton
+        v-show="searchTerm !== ''"
         class="hidden me-2 group-focus-within:flex"
         @click="clearSearchTerm"
       />
       <span
-        v-show="searchStatus"
-        class="info mx-4 hidden whitespace-nowrap text-xs font-semibold text-dark-charcoal-70 group-focus-within:hidden group-hover:text-dark-charcoal group-focus:text-dark-charcoal lg:block"
+        v-show="Boolean(searchStatus)"
+        class="info mx-4 hidden whitespace-nowrap text-xs text-dark-charcoal-70 group-focus-within:hidden group-hover:text-dark-charcoal group-focus:text-dark-charcoal lg:block"
       >
         {{ searchStatus }}
       </span>
@@ -64,7 +65,6 @@ import { isSearchTypeSupported, useSearchStore } from '~/stores/search'
 
 import { ALL_MEDIA, searchPath, supportedMediaTypes } from '~/constants/media'
 import { IsHeaderScrolledKey } from '~/types/provides'
-import { useMatchSearchRoutes } from '~/composables/use-match-routes'
 import { useI18n } from '~/composables/use-i18n'
 import { useI18nResultsCount } from '~/composables/use-i18n-utilities'
 
@@ -78,10 +78,11 @@ import { Focus } from '~/utils/focus-management'
 
 import { ensureFocus } from '~/utils/reakit-utils/focus'
 
-import VLogoButton from '~/components/VHeader/VLogoButton.vue'
-import VSearchGridFilter from '~/components/VFilters/VSearchGridFilter.vue'
+import VClearButton from '~/components/VHeader/VSearchBar/VClearButton.vue'
 import VFilterButton from '~/components/VHeader/VFilterButton.vue'
 import VSearchBar from '~/components/VHeader/VSearchBar/VSearchBar.vue'
+import VLogoButton from '~/components/VHeader/VLogoButton.vue'
+import VSearchGridFilter from '~/components/VFilters/VSearchGridFilter.vue'
 import VSearchTypePopover from '~/components/VContentSwitcher/VSearchTypePopover.vue'
 
 /**
@@ -90,6 +91,7 @@ import VSearchTypePopover from '~/components/VContentSwitcher/VSearchTypePopover
 export default defineComponent({
   name: 'VHeaderDesktop',
   components: {
+    VClearButton,
     VFilterButton,
     VLogoButton,
     VSearchGridFilter,
@@ -112,7 +114,6 @@ export default defineComponent({
 
     const content = useSearchType()
     const filterSidebar = useFilterSidebarVisibility()
-    const { matches: isSearchRoute } = useMatchSearchRoutes()
 
     const isHeaderScrolled = inject(IsHeaderScrolledKey)
 
@@ -149,7 +150,6 @@ export default defineComponent({
     const clearSearchTerm = () => {
       searchTerm.value = ''
       ensureFocus(searchBarRef.value?.$el.querySelector('input') as HTMLElement)
-      console.log('clearSearchTerm', window.document.activeElement)
     }
 
     const selectSearchType = async (type) => {
@@ -179,14 +179,10 @@ export default defineComponent({
      * Called when the 'search' button in the header is clicked.
      * There are several scenarios:
      * - search term hasn't changed:
-     *   - on a search route, do nothing.
-     *   - on other routes: set searchType to 'All content', reset the media,
-     *     change the path to `/search/` (All content).
+     *   - do nothing.
      * - search term changed:
-     *   - on a search route: Update the store searchTerm value, update query `q` param, reset media,
+     *   - Update the store searchTerm value, update query `q` param, reset media,
      *     fetch new media.
-     *   - on other routes: Update the store searchTerm value, set searchType to 'All content', reset media,
-     *     update query `q` param.
      * Updating the path causes the `search.vue` page's route watcher
      * to run and fetch new media.
      */
@@ -194,19 +190,12 @@ export default defineComponent({
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
       const mediaStore = useMediaStore()
       const searchStore = useSearchStore()
-      const searchType = isSearchRoute.value
-        ? searchStore.searchType
-        : ALL_MEDIA
-      if (
-        isSearchRoute.value &&
-        (!searchTermChanged.value || searchTerm.value === '')
-      )
-        return
+      const searchType = searchStore.searchType
+      if (!searchTermChanged.value || searchTerm.value === '') return
       if (searchTermChanged.value) {
         await mediaStore.clearMedia()
 
         searchStore.setSearchTerm(searchTerm.value)
-        searchStore.setSearchType(searchType)
       }
       document.activeElement?.blur()
       if (isSearchTypeSupported(searchType)) {
