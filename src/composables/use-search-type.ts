@@ -1,4 +1,4 @@
-import { computed, ref } from '@nuxtjs/composition-api'
+import { computed, ref, useContext, useRouter } from '@nuxtjs/composition-api'
 
 import {
   ALL_MEDIA,
@@ -9,10 +9,15 @@ import {
   additionalSearchTypes,
   supportedSearchTypes,
   SearchType,
+  searchPath,
 } from '~/constants/media'
 
-import { useSearchStore } from '~/stores/search'
+import { isSearchTypeSupported, useSearchStore } from '~/stores/search'
 import { useFeatureFlagStore } from '~/stores/feature-flag'
+
+import { useMediaStore } from '~/stores/media'
+
+import type { Dictionary } from 'vue-router/types/router'
 
 import allIcon from '~/assets/icons/all-content.svg'
 import audioIcon from '~/assets/icons/audio-content.svg'
@@ -40,10 +45,33 @@ export default function useSearchType() {
   )
   const searchTypes = [...supportedSearchTypes]
 
-  const setActiveType = (searchType: SearchType) => {
+  const setActiveType = async (
+    searchType: SearchType,
+    { updatePath = false, fetchResults = false } = {}
+  ) => {
+    const searchStore = useSearchStore()
+    const mediaStore = useMediaStore()
+    const { app } = useContext()
+    const router = useRouter()
+
     if (previousSearchType.value === searchType) return
-    useSearchStore().setSearchType(searchType)
+    searchStore.setSearchType(searchType)
     previousSearchType.value = searchType
+    if (updatePath) {
+      const newPath = app.localePath({
+        path: searchPath(searchType),
+        query: searchStore.searchQueryParams as Dictionary<string>,
+      })
+      router.push(newPath)
+    }
+    if (fetchResults) {
+      if (
+        isSearchTypeSupported(searchType) &&
+        mediaStore.shouldFetchSearchType(searchType)
+      ) {
+        await mediaStore.fetchMedia()
+      }
+    }
   }
 
   return {

@@ -63,7 +63,7 @@ import { Portal as VTeleport } from 'portal-vue'
 import { useMediaStore } from '~/stores/media'
 import { isSearchTypeSupported, useSearchStore } from '~/stores/search'
 
-import { ALL_MEDIA, searchPath, supportedMediaTypes } from '~/constants/media'
+import { searchPath } from '~/constants/media'
 import { IsHeaderScrolledKey } from '~/types/provides'
 import { useI18n } from '~/composables/use-i18n'
 import { useI18nResultsCount } from '~/composables/use-i18n-utilities'
@@ -153,26 +153,10 @@ export default defineComponent({
     }
 
     const selectSearchType = async (type) => {
-      content.setActiveType(type)
-
-      const newPath = app.localePath({
-        path: searchPath(type),
-        query: searchStore.searchQueryParams,
+      await content.setActiveType(type, {
+        updatePath: true,
+        fetchResults: true,
       })
-      router.push(newPath)
-
-      function typeWithoutMedia(mediaType) {
-        return mediaStore.resultCountsPerMediaType[mediaType] === 0
-      }
-
-      const shouldFetchMedia =
-        type === ALL_MEDIA
-          ? supportedMediaTypes.every((type) => typeWithoutMedia(type))
-          : typeWithoutMedia(type)
-
-      if (shouldFetchMedia) {
-        await mediaStore.fetchMedia()
-      }
     }
 
     /**

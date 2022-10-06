@@ -14,6 +14,7 @@ import {
   SupportedMediaType,
   supportedMediaTypes,
   isAdditionalSearchType,
+  SupportedSearchType,
 } from '~/constants/media'
 import { initServices } from '~/stores/media/services'
 import { isSearchTypeSupported, useSearchStore } from '~/stores/search'
@@ -494,6 +495,12 @@ export const useMediaStore = defineStore('media', {
           `Attempted to update media item ${type} ${id} but could not find it.`
         )
       }
+    },
+
+    shouldFetchSearchType(searchType: SupportedSearchType) {
+      return searchType === ALL_MEDIA
+        ? supportedMediaTypes.every((type) => this.results[type].count === 0)
+        : this.results[searchType].count === 0
     },
   },
 })

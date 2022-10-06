@@ -6,14 +6,9 @@ import {
   onMounted,
   Ref,
   ref,
-  useContext,
-  useRouter,
 } from '@nuxtjs/composition-api'
 
-import { ALL_MEDIA, searchPath, supportedMediaTypes } from '~/constants/media'
 import useSearchType from '~/composables/use-search-type'
-import { useMediaStore } from '~/stores/media'
-import { useSearchStore } from '~/stores/search'
 
 import VMobileMenuModal from '~/components/VContentSwitcherOld/VMobileMenuModal.vue'
 import VSearchTypePopoverOld from '~/components/VContentSwitcherOld/VSearchTypePopoverOld.vue'
@@ -38,10 +33,6 @@ export default defineComponent({
     const isMinScreenMd: Ref<boolean> = inject('isMinScreenMd')
     const menuModalRef = ref<ComponentInstance | null>(null)
     const content = useSearchType()
-    const { app } = useContext()
-    const mediaStore = useMediaStore()
-    const searchStore = useSearchStore()
-    const router = useRouter()
 
     const isMounted = ref(false)
     onMounted(() => {
@@ -49,26 +40,10 @@ export default defineComponent({
     })
     const selectSearchType = async (type) => {
       menuModalRef.value?.closeMenu()
-      content.setActiveType(type)
-
-      const newPath = app.localePath({
-        path: searchPath(type),
-        query: searchStore.searchQueryParams,
+      await content.setActiveType(type, {
+        updatePath: true,
+        fetchResults: true,
       })
-      router.push(newPath)
-
-      function typeWithoutMedia(mediaType) {
-        return mediaStore.resultCountsPerMediaType[mediaType] === 0
-      }
-
-      const shouldFetchMedia =
-        type === ALL_MEDIA
-          ? supportedMediaTypes.every((type) => typeWithoutMedia(type))
-          : typeWithoutMedia(type)
-
-      if (shouldFetchMedia) {
-        await mediaStore.fetchMedia()
-      }
     }
 
     return {
