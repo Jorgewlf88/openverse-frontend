@@ -261,10 +261,6 @@ export const goToSearchTerm = async (
     await page.waitForLoadState('load')
   }
   await scrollDownAndUp(page)
-  const pageWidth = page.viewportSize()?.width
-  if (pageWidth && pageWidth > smWidth && query !== '&ff_new_header=on') {
-    await page.waitForSelector(`[aria-label="${t('header.aria.menu', dir)}"]`)
-  }
 }
 
 /**
@@ -272,11 +268,10 @@ export const goToSearchTerm = async (
  * and waits for navigation.
  */
 export const searchFromHeader = async (page: Page, term: string) => {
+  // Double click on the search bar to remove previous value
+  await page.dblclick('id=search-bar')
   await page.fill('id=search-bar', term)
-  await Promise.all([
-    page.waitForNavigation(),
-    page.locator('button[type="submit"]').click(),
-  ])
+  await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')])
 }
 
 /**
@@ -344,6 +339,15 @@ export const pathWithDir = (rawPath: string, dir: string) => {
 }
 
 export const enableNewHeader = async (page: Page) => {
+  // Add the new_header cookie
+  await page.context().addCookies([
+    {
+      name: 'features',
+      value: '%7B%22new_header%22%3A%22on%22%7D',
+      domain: 'localhost',
+      path: '/',
+    },
+  ])
   await page.goto('/preferences')
   const newHeaderCheckboxLocator = 'input#new_header'
 
